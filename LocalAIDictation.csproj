@@ -10,5 +10,7 @@
   <ItemGroup>
     <!-- Other PackageReference entries... -->
     <PackageReference Include="NAudio" Version="1.10.0" />
+    <PackageReference Include="OllamaSharp" Version="1.1.0" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 ﻿using NAudio.Wave;
+using OllamaSharp;
 using System.Net.Http.Headers;
+using TextCopy;
 
 string outputWaveFilePath = "output.wav";
 var waveIn = new WaveInEvent();
@@ -8,13 +10,19 @@ waveIn.DataAvailable += (sender, args) => writer.Write(args.Buffer, 0, args.Byte
 waveIn.RecordingStopped += (sender, args) => writer.Dispose();
 waveIn.StartRecording();
 
+string? clipboard = await ClipboardService.GetTextAsync();
+string initialPrompt = $"I want you to act as a polite professional office worker. Assume the text within 3 backticks is the context. ```{clipboard}```. Using the context, ";
+
 // Wait for user input to stop recording
-Console.WriteLine("Press any key to stop recording...");
-Console.ReadKey();
+Console.WriteLine("---Press any key to stop recording...");
+Console.ReadKey(false);
 waveIn.StopRecording();
+Console.WriteLine("---Processing Audio.");
 string? transcription = await CallEndpoint(outputWaveFilePath);
 Console.WriteLine(transcription);
-Console.ReadKey();
+Console.WriteLine("---Processing LLM.");
+await LocalLLM(initialPrompt + transcription);
+Console.ReadKey(false);
 
 static async Task<string?> CallEndpoint(string outputWaveFilePath)
 {
@@ -32,4 +40,17 @@ static async Task<string?> CallEndpoint(string outputWaveFilePath)
 
     string responseString = await response.Content.ReadAsStringAsync();
     return responseString;
+}
+
+static async Task LocalLLM(string? transcription)
+{
+    var uri = new Uri("http://localhost:11434");
+    var ollama = new OllamaApiClient(uri)
+    {
+        SelectedModel = "mistral"
+    };
+
+    // keep reusing the context to keep the chat topic going
+    ConversationContext? context = null;
+    context = await ollama.StreamCompletion(transcription, context, stream => Console.Write(stream.Response));
 }
