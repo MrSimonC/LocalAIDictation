@@ -11,18 +11,19 @@ waveIn.RecordingStopped += (sender, args) => writer.Dispose();
 waveIn.StartRecording();
 
 string? clipboard = await ClipboardService.GetTextAsync();
-string initialPrompt = $"I want you to act as a polite professional office worker. Assume the text within 3 backticks is the context. ```{clipboard}```. Using the context, ";
+string initialPrompt = $"My name is Simon Crouch and I want you to act as me. My tone is casual, professional, slightly indirect yet enthusiastic. Assume the text within 3 backticks is the context: ```{clipboard}```. Using the context, ";
 
 // Wait for user input to stop recording
 Console.WriteLine("---Press any key to stop recording...");
-Console.ReadKey(false);
+Console.ReadKey(true);
 waveIn.StopRecording();
 Console.WriteLine("---Processing Audio.");
 string? transcription = await CallEndpoint(outputWaveFilePath);
 Console.WriteLine(transcription);
 Console.WriteLine("---Processing LLM.");
-await LocalLLM(initialPrompt + transcription);
-Console.ReadKey(false);
+(string streamedText, var context) = await LocalLLM(initialPrompt + transcription);
+await ClipboardService.SetTextAsync(streamedText.Trim());
+Console.ReadKey(true);
 
 static async Task<string?> CallEndpoint(string outputWaveFilePath)
 {
@@ -42,7 +43,7 @@ static async Task<string?> CallEndpoint(string outputWaveFilePath)
     return responseString;
 }
 
-static async Task LocalLLM(string? transcription)
+static async Task<(string streamedText, ConversationContext? context)> LocalLLM(string? transcription)
 {
     var uri = new Uri("http://localhost:11434");
     var ollama = new OllamaApiClient(uri)
@@ -52,5 +53,13 @@ static async Task LocalLLM(string? transcription)
 
     // keep reusing the context to keep the chat topic going
     ConversationContext? context = null;
-    context = await ollama.StreamCompletion(transcription, context, stream => Console.Write(stream.Response));
+    string streamedText = ""; // Variable to store the streamed text
+
+    context = await ollama.StreamCompletion(transcription, context, stream =>
+    {
+        Console.Write(stream.Response);
+        streamedText += stream.Response; // Append the streamed text to the variable
+    });
+
+    return (streamedText, context); // Return the full streamed text and the context
 }
