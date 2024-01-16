@@ -9,6 +9,7 @@ ConversationContext? context = null;
 Console.WriteLine("--- Press any key to stop recording... ---");
 voiceToAi.VoiceInputRecordVoice();
 Console.ReadKey(true);
+Console.WriteLine("--- Processing recording. ---");
 string textDictation = await voiceToAi.VoiceProcessRecordingToTextAsync();
 Console.WriteLine(textDictation);
 ClipboardService.SetText(textDictation);
@@ -21,6 +22,9 @@ if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
 {
     Console.WriteLine("--- (Initial AI base context file found and loaded ---");
     initialPrompt = File.ReadAllText(filePath);
+    // replace {0} in INITIAL_BASE_AI_CONTEXT_PATH file the with clipboard text
+    initialPrompt = string.Format(initialPrompt, ClipboardService.GetText());
+    Console.WriteLine($"--- Initial AI base context is: {initialPrompt} ---");
 }
 else
 {
