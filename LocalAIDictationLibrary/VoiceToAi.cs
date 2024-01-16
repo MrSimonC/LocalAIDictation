@@ -4,22 +4,27 @@ using System.Net.Http.Headers;
 
 namespace LocalAIDictationToLLM
 {
-    public static class VoiceToAi
+    public class VoiceToAi
     {
         private const string WhisperApiUrl = "http://localhost:9000/asr?encode=true&task=transcribe&language=en&word_timestamps=false&output=txt";
         private const string OllamaApiUrl = "http://localhost:11434";
+        private const string OutputWaveFilePath = "output.wav";
+        public WaveInEvent WaveIn { get; set; }
 
-        public static async Task<string> VoiceInputTextOutput()
+        public VoiceToAi() => WaveIn = new WaveInEvent();
+
+        public void VoiceInputRecordVoice()
         {
-            string outputWaveFilePath = "output.wav";
-            var waveIn = new WaveInEvent();
-            var writer = new WaveFileWriter(outputWaveFilePath, waveIn.WaveFormat);
-            waveIn.DataAvailable += (sender, args) => writer.Write(args.Buffer, 0, args.BytesRecorded);
-            waveIn.RecordingStopped += (sender, args) => writer.Dispose();
-            waveIn.StartRecording();
-            _ = Console.ReadKey(true);
-            waveIn.StopRecording();
-            string? transcription = await CallWhisperApiAsync(outputWaveFilePath);
+            var writer = new WaveFileWriter(OutputWaveFilePath, WaveIn.WaveFormat);
+            WaveIn.DataAvailable += (sender, args) => writer.Write(args.Buffer, 0, args.BytesRecorded);
+            WaveIn.RecordingStopped += (sender, args) => writer.Dispose();
+            WaveIn.StartRecording();
+        }
+
+        public async Task<string> VoiceProcessRecordingToTextAsync()
+        {
+            WaveIn.StopRecording();
+            string? transcription = await CallWhisperApiAsync(OutputWaveFilePath);
             return transcription ?? string.Empty;
         }
 
