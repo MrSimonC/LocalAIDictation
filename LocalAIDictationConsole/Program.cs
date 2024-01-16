@@ -24,7 +24,7 @@ string initialPrompt = string.Empty;
 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
 {
     initialPrompt = File.ReadAllText(filePath);
-    Console.WriteLine("--- (Initial AI base context file found and loaded ---");
+    Console.WriteLine("--- (Initial AI base context file found and loaded) ---");
     // replace {0} in INITIAL_BASE_AI_CONTEXT_PATH file the with clipboard text
     initialPrompt = string.Format(initialPrompt, clipboardText);
 #if DEBUG
