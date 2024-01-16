@@ -14,21 +14,25 @@ Since Mistral 7B has a massive 8K Token context, we also prepend the prompt pass
 
 ### Dependencies
 
-This is designed to run in WSL for Windows.
+This is designed to run in WSL for Windows on a PC with NVIDIA GPU *(confirmed working on a 6GB NVIDIA GPU)*.
 
-Install NVIDIA CUDA software:
+Install NVIDIA CUDA software and WSL driver:
 
 * <https://developer.nvidia.com/cuda-downloads>
 * <https://developer.nvidia.com/cuda/wsl>
 
 Run Wisper locally in docker:
+
 * https://github.com/ahmetoner/whisper-asr-webservice
-`docker run -d --gpus all -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerahmet/openai-whisper-asr-webservice:latest-gpu`
+
+e.g. `docker run -d --gpus all -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerahmet/openai-whisper-asr-webservice:latest-gpu`
 
 Run Mistral locally in Ollama (mistral 7B "mini" with 8K context):
-* `ollama serve`
 
-Ollama api server has a 5 minute timeout to releases resources. The 5 minute timeout is [not currently user configurable](https://github.com/jmorganca/ollama/issues/837#issuecomment-1771354540). If you want to keep it alive, you can periodically send an empty generate request:
+* `ollama serve`
+* `ollama run mistral` - run once to install the model
+
+Ollama api server has a 5 minute timeout to releases resources which is [not currently user configurable](https://github.com/jmorganca/ollama/issues/837#issuecomment-1771354540). If you want to keep it alive, you can periodically send an empty generate request:
 
 `while :; do curl localhost:11434/api/generate -d '{"model":"mistral","system":"","prompt":"","template":""}'; sleep 60; done`
 
