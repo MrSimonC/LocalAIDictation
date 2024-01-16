@@ -4,6 +4,9 @@ using TextCopy;
 
 var voiceToAi = new VoiceToAi();
 
+// Get Clipboard before recording
+string clipboardText = ClipboardService.GetText() ?? string.Empty;
+
 // Voice
 ConversationContext? context = null;
 Console.WriteLine("--- Press any key to stop recording... ---");
@@ -20,11 +23,11 @@ string? filePath = Environment.GetEnvironmentVariable("INITIAL_BASE_AI_CONTEXT_P
 string initialPrompt = string.Empty;
 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
 {
-    Console.WriteLine("--- (Initial AI base context file found and loaded ---");
     initialPrompt = File.ReadAllText(filePath);
+    Console.WriteLine("--- (Initial AI base context file found and loaded ---");
     // replace {0} in INITIAL_BASE_AI_CONTEXT_PATH file the with clipboard text
-    initialPrompt = string.Format(initialPrompt, ClipboardService.GetText());
-    Console.WriteLine($"--- Initial AI base context is: {initialPrompt} ---");
+    initialPrompt = string.Format(initialPrompt, clipboardText);
+    Console.WriteLine($"---( Initial AI base context is: {initialPrompt} )---");
 }
 else
 {
