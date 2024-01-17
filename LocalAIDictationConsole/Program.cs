@@ -14,6 +14,7 @@ voiceToAi.VoiceInputRecordVoice();
 Console.ReadKey(true);
 Console.WriteLine("--- Processing recording. ---");
 string textDictation = await voiceToAi.VoiceProcessRecordingToTextAsync();
+textDictation = textDictation.Replace("\n", " ");
 Console.WriteLine(textDictation);
 ClipboardService.SetText(textDictation);
 Console.WriteLine("--- Dictation copied to clipboard. ---");
