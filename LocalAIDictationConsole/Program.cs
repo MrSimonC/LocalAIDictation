@@ -8,7 +8,7 @@ var voiceToAi = new VoiceToAi();
 string clipboardText = ClipboardService.GetText() ?? string.Empty;
 
 // Voice
-string initialWhisperPrompt = GetEnvironmentVariableFileContents("INITIAL_WHISPER_AI_PROMPT_PATH"); // 224 max tokens allowed by whisper ai
+string initialWhisperPrompt = GetEnvironmentVariableFileContents("WHISPER_AI_INITIAL_PROMPT_PATH"); // 224 max tokens allowed by whisper ai
 ConversationContext? context = null;
 string foundContext = !string.IsNullOrEmpty(initialWhisperPrompt) ? " with context" : string.Empty;
 Console.WriteLine($"--- Recording{foundContext}. Press Space for dictation only, or any other to push to local AI... ---");
@@ -17,6 +17,24 @@ var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing voice ---");
 string textDictation = await voiceToAi.VoiceProcessRecordingToTextAsync(initialWhisperPrompt);
 textDictation = textDictation.Replace("\n", " ");
+
+// write code to read in WHISPER_AI_POST_PROCESSING_PATH csv file using GetEnvironmentVariableFileContents(), ignore the header (first row), then loop through entires, replacing anything found in column 1 from the csv with column 2 from the csv in textDictation
+string initialWhisperPromptCsv = GetEnvironmentVariableFileContents("WHISPER_AI_POST_PROCESSING_PATH");
+if (!string.IsNullOrEmpty(initialWhisperPromptCsv))
+{
+    Console.WriteLine("--- Performing Post Processing ---");
+    string[] initialWhisperPromptCsvLines = initialWhisperPromptCsv.Split("\r\n");
+    for (int i = 1; i < initialWhisperPromptCsvLines.Length; i++)
+    {
+        string[] initialWhisperPromptCsvLine = initialWhisperPromptCsvLines[i].Split(",");
+        textDictation = textDictation.Replace(initialWhisperPromptCsvLine[0], initialWhisperPromptCsvLine[1]);
+    }
+}
+else
+{
+    Console.WriteLine("--- No post processing file found ---");
+}
+
 ClipboardService.SetText(textDictation);
 Console.WriteLine("--- Dictation copied to clipboard. ---");
 // if keyPressed = space, then exit the program
