@@ -26,6 +26,10 @@ namespace LocalAIDictationToLLM
         {
             WaveIn.StopRecording();
             string? transcription = await CallWhisperApiAsync(OutputWaveFilePath, initialPrompt);
+
+            // Delete the output wave file
+            File.Delete(OutputWaveFilePath);
+
             return transcription ?? string.Empty;
         }
 
