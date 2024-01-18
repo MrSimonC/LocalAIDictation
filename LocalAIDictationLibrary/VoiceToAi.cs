@@ -9,6 +9,7 @@ namespace LocalAIDictationToLLM
         private const string WhisperApiUrl = "http://localhost:9000/asr?encode=true&task=transcribe&language=en&word_timestamps=false&output=txt";
         private const string OllamaApiUrl = "http://localhost:11434";
         private const string OutputWaveFilePath = "output.wav";
+
         public WaveInEvent WaveIn { get; set; }
 
         public VoiceToAi() => WaveIn = new WaveInEvent();
@@ -21,11 +22,33 @@ namespace LocalAIDictationToLLM
             WaveIn.StartRecording();
         }
 
-        public async Task<string> VoiceProcessRecordingToTextAsync()
+        public async Task<string> VoiceProcessRecordingToTextAsync(string? initialPrompt = null)
         {
             WaveIn.StopRecording();
-            string? transcription = await CallWhisperApiAsync(OutputWaveFilePath);
+            string? transcription = await CallWhisperApiAsync(OutputWaveFilePath, initialPrompt);
             return transcription ?? string.Empty;
+        }
+
+        private static async Task<string?> CallWhisperApiAsync(string outputWaveFilePath, string? initialPrompt = null)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            using var content = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent(File.ReadAllBytes(outputWaveFilePath));
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/wav");
+
+            content.Add(fileContent, "audio_file", Path.GetFileName(outputWaveFilePath));
+            if (!string.IsNullOrEmpty(initialPrompt))
+            {
+                content.Add(new StringContent(initialPrompt), "initial_prompt");
+            }
+
+            var response = await client.PostAsync(WhisperApiUrl, content);
+
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
         }
 
         public static async Task<(string streamedText, ConversationContext? context)> CallOllamaModelApi(string? prompt, ConversationContext? context = null)
@@ -46,24 +69,6 @@ namespace LocalAIDictationToLLM
             });
 
             return (streamedText, context); // Return the full streamed text and the context
-        }
-
-        private static async Task<string?> CallWhisperApiAsync(string outputWaveFilePath)
-        {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            using var content = new MultipartFormDataContent();
-            var fileContent = new ByteArrayContent(File.ReadAllBytes(outputWaveFilePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/wav");
-
-            content.Add(fileContent, "audio_file", Path.GetFileName(outputWaveFilePath));
-
-            var response = await client.PostAsync(WhisperApiUrl, content);
-
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
         }
     }
 }
