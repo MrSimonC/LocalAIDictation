@@ -10,16 +10,15 @@ string clipboardText = ClipboardService.GetText() ?? string.Empty;
 // Voice
 string initialWhisperPrompt = GetEnvironmentVariableFileContents("INITIAL_WHISPER_AI_PROMPT_PATH"); // 224 max tokens allowed by whisper ai
 ConversationContext? context = null;
-Console.WriteLine("--- Recording. Press Space for dictation only, or any other to push to local AI... ---");
+string foundContext = !string.IsNullOrEmpty(initialWhisperPrompt) ? " with context" : string.Empty;
+Console.WriteLine($"--- Recording{foundContext}. Press Space for dictation only, or any other to push to local AI... ---");
 voiceToAi.VoiceInputRecordVoice();
 var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing voice ---");
 string textDictation = await voiceToAi.VoiceProcessRecordingToTextAsync(initialWhisperPrompt);
 textDictation = textDictation.Replace("\n", " ");
-Console.WriteLine(textDictation);
 ClipboardService.SetText(textDictation);
 Console.WriteLine("--- Dictation copied to clipboard. ---");
-
 // if keyPressed = space, then exit the program
 if (keyPressed.Key == ConsoleKey.Spacebar)
 {
