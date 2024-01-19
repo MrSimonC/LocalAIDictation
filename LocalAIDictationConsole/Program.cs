@@ -11,7 +11,7 @@ string clipboardText = ClipboardService.GetText() ?? string.Empty;
 string initialWhisperPrompt = GetEnvironmentVariableFileContents("WHISPER_AI_INITIAL_PROMPT_PATH"); // 224 max tokens allowed by whisper ai
 ConversationContext? context = null;
 string foundInitialWhisperPrompt = !string.IsNullOrEmpty(initialWhisperPrompt) ? " with context" : string.Empty;
-Console.WriteLine($"--- Recording{foundInitialWhisperPrompt}. Press Space for dictation only, or any other to push to local AI... ---");
+Console.WriteLine($"--- Recording{foundInitialWhisperPrompt}. Press Space for dictation only, or any other key to use local AI ---");
 voiceToAi.VoiceInputRecordVoice();
 var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing voice ---");
@@ -36,18 +36,18 @@ else
 }
 
 ClipboardService.SetText(textDictation);
-Console.WriteLine("--- Dictation copied to clipboard. ---");
+Console.WriteLine("--- Dictation copied to clipboard ---");
 // if keyPressed = space, then exit the program
 if (keyPressed.Key == ConsoleKey.Spacebar)
 {
-    Console.WriteLine("--- Exiting program. ---");
+    Console.WriteLine("--- Exiting program ---");
     return;
 }
 
 // AI - Load Optional Context
 string initialBaseAIContext = GetEnvironmentVariableFileContents("INITIAL_BASE_AI_CONTEXT_PATH");
 initialBaseAIContext = string.Format(initialBaseAIContext, clipboardText); // replace {0} in INITIAL_BASE_AI_CONTEXT_PATH file the with clipboard text
-string foundInitialBaseAIContext = !string.IsNullOrEmpty(initialBaseAIContext) ? " with context" : string.Empty;
+string foundInitialBaseAIContext = !string.IsNullOrEmpty(initialBaseAIContext) ? "with context " : string.Empty;
 #if DEBUG
     Console.WriteLine($"---( Initial AI base context is: {initialBaseAIContext} )---");
 #endif
