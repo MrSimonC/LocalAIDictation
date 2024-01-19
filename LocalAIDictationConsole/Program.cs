@@ -1,12 +1,17 @@
-﻿using LocalAIDictationToLLM;
+﻿using LocalAIDictationConsole;
+using LocalAIDictationToLLM;
 using OllamaSharp;
 using TextCopy;
 
 // Environment Variables
-string whisperInitialPrompt = GetEnvironmentVariableFileContents("WHISPER_AI_INITIAL_PROMPT_PATH");
-string whisperPostProcessingCsv = GetEnvironmentVariableFileContents("WHISPER_AI_POST_PROCESSING_PATH");
-string ollamaBaseContext = GetEnvironmentVariableFileContents("OLLAMA_BASE_CONTEXT_PATH");
-string? ollamaModel = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "phi";
+string whisperInitialPrompt = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("WHISPER_AI_INITIAL_PROMPT_PATH");
+string whisperPostProcessingCsv = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("WHISPER_AI_POST_PROCESSING_PATH");
+string ollamaBaseContext = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("OLLAMA_BASE_CONTEXT_PATH");
+string ollamaModel = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "phi";
+string foundWhisperInitialPrompt = !string.IsNullOrEmpty(whisperInitialPrompt) ? "with" : "without";
+string foundWhisperPostProcessingCsv = !string.IsNullOrEmpty(whisperPostProcessingCsv) ? "with" : "without";
+string foundOllamaBaseContext = !string.IsNullOrEmpty(ollamaBaseContext) ? "with" : "without"; 
+string foundOllamaModel = !string.IsNullOrEmpty(ollamaModel) ? "with" : "with default";
 
 var voiceToAi = new VoiceToAi();
 
@@ -15,8 +20,6 @@ string clipboardText = ClipboardService.GetText() ?? string.Empty;
 
 // Voice
 ConversationContext? context = null;
-string foundWhisperInitialPrompt = !string.IsNullOrEmpty(whisperInitialPrompt) ? "with" : "without";
-string foundWhisperPostProcessingCsv = !string.IsNullOrEmpty(whisperPostProcessingCsv) ? "with" : "without";
 Console.WriteLine($"--- Recording {foundWhisperInitialPrompt} context {foundWhisperPostProcessingCsv} post processing ---");
 Console.WriteLine("Press Space for dictation only, or any other key to use local AI ---");
 voiceToAi.VoiceInputRecordVoice();
@@ -47,27 +50,14 @@ if (keyPressed.Key == ConsoleKey.Spacebar)
     return;
 }
 
-// AI - Load Optional Context
+// Local LLM
 ollamaBaseContext = string.Format(ollamaBaseContext, clipboardText); // replace {0} in INITIAL_BASE_AI_CONTEXT_PATH file the with clipboard text
-string foundOllamaBaseContext = !string.IsNullOrEmpty(ollamaBaseContext) ? "with " : "without";
-#if DEBUG
-Console.WriteLine($"---( Initial AI base context is: {ollamaBaseContext} )---");
-#endif
 
-Console.WriteLine($"--- Processing {ollamaModel} LLM {foundOllamaBaseContext} context ---");
+
+Console.WriteLine($"--- Processing {foundOllamaModel} {ollamaModel} LLM model {foundOllamaBaseContext} context ---");
 string prompt = ollamaBaseContext + textDictation;
+#if DEBUG
+Console.WriteLine($"\n\n--- DEBUG: Prompt is {prompt} ---\n\n");
+#endif
 (string streamedText, _) = await VoiceToAi.CallOllamaModelApi(ollamaModel, prompt, context);
 await ClipboardService.SetTextAsync(streamedText.Trim());
-
-static string GetEnvironmentVariableFileContents(string environmentVariableName)
-{
-    string? filePath = Environment.GetEnvironmentVariable(environmentVariableName);
-    if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
-    {
-        return File.ReadAllText(filePath);
-    }
-    else
-    {
-        return string.Empty;
-    }
-}
