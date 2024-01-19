@@ -51,8 +51,11 @@ string foundInitialBaseAIContext = !string.IsNullOrEmpty(initialBaseAIContext) ?
 #if DEBUG
     Console.WriteLine($"---( Initial AI base context is: {initialBaseAIContext} )---");
 #endif
-Console.WriteLine($"--- Processing LLM {foundInitialBaseAIContext}---");
-(string streamedText, _) = await VoiceToAi.CallOllamaModelApi(initialBaseAIContext + textDictation, context);
+
+string? model = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "phi";
+Console.WriteLine($"--- Processing {model} LLM {foundInitialBaseAIContext}---");
+string prompt = initialBaseAIContext + textDictation;
+(string streamedText, _) = await VoiceToAi.CallOllamaModelApi(model, prompt, context);
 await ClipboardService.SetTextAsync(streamedText.Trim());
 
 static string GetEnvironmentVariableFileContents(string environmentVariableName)

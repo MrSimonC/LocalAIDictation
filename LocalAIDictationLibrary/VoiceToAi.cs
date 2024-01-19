@@ -55,12 +55,15 @@ namespace LocalAIDictationToLLM
             return responseString;
         }
 
-        public static async Task<(string streamedText, ConversationContext? context)> CallOllamaModelApi(string? prompt, ConversationContext? context = null)
+        public static async Task<(string streamedText, ConversationContext? context)> CallOllamaModelApi(
+            string model,
+            string prompt,
+            ConversationContext? context = null)
         {
             var uri = new Uri(OllamaApiUrl);
             var ollama = new OllamaApiClient(uri)
             {
-                SelectedModel = "mistral"
+                SelectedModel = model
             };
 
             // keep reusing the context to keep the chat topic going
