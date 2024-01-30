@@ -3,6 +3,9 @@ using LocalAIDictationToLLM;
 using OllamaSharp;
 using TextCopy;
 
+(_, _) = await VoiceToAi.CallOllamaModelApi("stablelm2", "hello how are you?");
+return;
+
 // Environment Variables
 string whisperInitialPrompt = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("WHISPER_AI_INITIAL_PROMPT_PATH");
 string whisperPostProcessingCsv = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("WHISPER_AI_POST_PROCESSING_PATH");

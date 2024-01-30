@@ -1,6 +1,10 @@
 ﻿using NAudio.Wave;
 using OllamaSharp;
+using OllamaSharp.Models;
+using OllamaSharp.Streamer;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using static OllamaSharp.OllamaApiClient;
 
 namespace LocalAIDictationToLLM
 {
@@ -61,19 +65,23 @@ namespace LocalAIDictationToLLM
             ConversationContext? context = null)
         {
             var uri = new Uri(OllamaApiUrl);
-            var ollama = new OllamaApiClient(uri)
-            {
-                SelectedModel = model
-            };
+            var ollama = new OllamaApiClient(uri);
 
             // keep reusing the context to keep the chat topic going
             string streamedText = ""; // Variable to store the streamed text
 
-            context = await ollama.StreamCompletion(prompt, context, stream =>
+            var generateRequest = new GenerateCompletionRequest
+            {
+                Prompt = prompt,
+                Options = "{ \"temperature\": 0.9 }",
+                Model = model
+            };
+
+            context = await ollama.StreamCompletion(generateRequest, new ActionResponseStreamer<GenerateCompletionResponseStream>(stream =>
             {
                 Console.Write(stream.Response);
                 streamedText += stream.Response; // Append the streamed text to the variable
-            });
+            }));
 
             return (streamedText, context); // Return the full streamed text and the context
         }
