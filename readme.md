@@ -10,6 +10,17 @@ After the voice data has been processed, we then use the Mistral model from the 
 
 Since Mistral 7B has a massive 8K Token context, we also prepend the prompt passed in to ground the model with useful grounding data.
 
+## Environment Variables
+
+The application uses the following **optional** environment variables:
+
+- `WHISPER_SERVER_IP`: The IP address of the Whisper server. Defaults to "localhost".
+- `WHISPER_AI_INITIAL_PROMPT_PATH`: Path to the file containing the initial prompt for the Whisper AI.
+- `WHISPER_AI_POST_PROCESSING_PATH`: Path to the file containing post-processing instructions for the Whisper AI.
+- `OLLAMA_BASE_CONTEXT_PATH`: Path to the file containing the base context for the Ollama API.
+- `OLLAMA_SERVER_IP`: The IP address of the Ollama server. Defaults to "localhost".
+- `OLLAMA_MODEL`: The model to use with the Ollama API. Defaults to "phi".
+
 ## Getting Started
 
 ### Dependencies

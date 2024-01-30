@@ -6,13 +6,18 @@ namespace LocalAIDictationToLLM
 {
     public class VoiceToAi
     {
-        private const string WhisperApiUrl = "http://localhost:9000/asr?encode=true&task=transcribe&language=en&word_timestamps=false&output=txt";
-        private const string OllamaApiUrl = "http://localhost:11434";
+        private readonly string WhisperServerIp;
+        private readonly string OllamaServerIp;
         private const string OutputWaveFilePath = "output.wav";
 
         public WaveInEvent WaveIn { get; set; }
 
-        public VoiceToAi() => WaveIn = new WaveInEvent();
+        public VoiceToAi(string? whisperServerIp, string? ollamaServerIp)
+        {
+            WaveIn = new WaveInEvent();
+            WhisperServerIp = whisperServerIp ?? "localhost";
+            OllamaServerIp = ollamaServerIp ?? "localhost";
+        }
 
         public void VoiceInputRecordVoice()
         {
@@ -33,7 +38,7 @@ namespace LocalAIDictationToLLM
             return transcription ?? string.Empty;
         }
 
-        private static async Task<string?> CallWhisperApiAsync(string outputWaveFilePath, string? initialPrompt = null)
+        private async Task<string?> CallWhisperApiAsync(string outputWaveFilePath, string? initialPrompt = null)
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
@@ -49,17 +54,19 @@ namespace LocalAIDictationToLLM
                 content.Add(new StringContent(initialPrompt), "initial_prompt");
             }
 
-            var response = await client.PostAsync(WhisperApiUrl, content);
+            string whisperApiUrl = $"http://{WhisperServerIp}:9000/asr?encode=true&task=transcribe&language=en&word_timestamps=false&output=txt";
+            var response = await client.PostAsync(whisperApiUrl, content);
 
             string responseString = await response.Content.ReadAsStringAsync();
             return responseString;
         }
 
-        public static async Task<(string streamedText, ConversationContext? context)> CallOllamaModelApi(
+        public async Task<(string streamedText, ConversationContext? context)> CallOllamaModelApi(
             string model,
             string prompt,
             ConversationContext? context = null)
         {
+            string OllamaApiUrl = $"http://{OllamaServerIp}:11434";
             var uri = new Uri(OllamaApiUrl);
             var ollama = new OllamaApiClient(uri)
             {
