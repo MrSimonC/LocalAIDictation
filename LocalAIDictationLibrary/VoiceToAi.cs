@@ -4,20 +4,13 @@ using System.Net.Http.Headers;
 
 namespace LocalAIDictationToLLM
 {
-    public class VoiceToAi
+    public class VoiceToAi(string? whisperServerIp, string? ollamaServerIp)
     {
-        private readonly string WhisperServerIp;
-        private readonly string OllamaServerIp;
+        private readonly string WhisperServerIp = whisperServerIp ?? "localhost";
+        private readonly string OllamaServerIp = ollamaServerIp ?? "localhost";
         private const string OutputWaveFilePath = "output.wav";
 
-        public WaveInEvent WaveIn { get; set; }
-
-        public VoiceToAi(string? whisperServerIp, string? ollamaServerIp)
-        {
-            WaveIn = new WaveInEvent();
-            WhisperServerIp = whisperServerIp ?? "localhost";
-            OllamaServerIp = ollamaServerIp ?? "localhost";
-        }
+        public WaveInEvent WaveIn { get; set; } = new WaveInEvent();
 
         public void VoiceInputRecordVoice()
         {
@@ -45,7 +38,7 @@ namespace LocalAIDictationToLLM
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             using var content = new MultipartFormDataContent();
-            var fileContent = new ByteArrayContent(File.ReadAllBytes(outputWaveFilePath));
+            var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(outputWaveFilePath));
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/wav");
 
             content.Add(fileContent, "audio_file", Path.GetFileName(outputWaveFilePath));

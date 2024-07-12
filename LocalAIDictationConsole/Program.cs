@@ -14,13 +14,13 @@ string foundWhisperServerIp = $"on server {whisperServerIp}";
 string foundWhisperInitialPrompt = !string.IsNullOrEmpty(whisperInitialPrompt) ? "with" : "without";
 string foundWhisperPostProcessingCsv = !string.IsNullOrEmpty(whisperPostProcessingCsv) ? "with" : "without";
 string foundOllamaServerIp = $"with {ollamaServerIp} server";
-string foundOllamaBaseContext = !string.IsNullOrEmpty(ollamaBaseContext) ? "with" : "without"; 
+string foundOllamaBaseContext = !string.IsNullOrEmpty(ollamaBaseContext) ? "with" : "without";
 string foundOllamaModel = !string.IsNullOrEmpty(ollamaModel) ? "with" : "with default";
 
 var voiceToAi = new VoiceToAi(whisperServerIp, ollamaServerIp);
 
 // Get Clipboard before recording
-string clipboardText = ClipboardService.GetText() ?? string.Empty;
+string clipboardText = await ClipboardService.GetTextAsync() ?? string.Empty;
 
 // Voice
 ConversationContext? context = null;
@@ -47,7 +47,7 @@ if (!string.IsNullOrEmpty(whisperPostProcessingCsv))
 }
 Console.WriteLine("--- Processing done. You said ---");
 Console.WriteLine(textDictation);
-ClipboardService.SetText(textDictation);
+await ClipboardService.SetTextAsync(textDictation);
 Console.WriteLine("--- Dictation copied to clipboard ---");
 if (keyPressed.Key == ConsoleKey.Spacebar)
 {
