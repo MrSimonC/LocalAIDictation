@@ -25,6 +25,8 @@ var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing ---");
 string initialTextDictation = await voiceToAi.VoiceProcessRecordingToTextAsync(whisperInitialPrompt);
 string textDictation = PostProcessWhisperWithCSV(whisperPostProcessingCsv, initialTextDictation);
+// Clipboard
+string originalClipboardText = await ClipboardService.GetTextAsync() ?? string.Empty;
 // Always copy light-post-processed dictated text to clipboard
 await ClipboardService.SetTextAsync(textDictation.Trim());
 // Prompt
@@ -40,8 +42,7 @@ else if (keyPressed.Key == ConsoleKey.D) // output dictation alone, then exit
 }
 else if (keyPressed.Key == ConsoleKey.C) // use the clipboard with context
 {
-    string clipboardText = await ClipboardService.GetTextAsync() ?? string.Empty;
-    string contextWithClipboard = baseContext + "\n\n" + clipboardText;
+    string contextWithClipboard = baseContext + "\n\n" + originalClipboardText;
     prompt = CreatePrompt(contextWithClipboard, promptActAsMe, textDictation);
 }
 else
