@@ -25,6 +25,8 @@ var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing ---");
 string initialTextDictation = await voiceToAi.VoiceProcessRecordingToTextAsync(whisperInitialPrompt);
 string textDictation = PostProcessWhisperWithCSV(whisperPostProcessingCsv, initialTextDictation);
+// Always copy light-post-processed dictated text to clipboard
+await ClipboardService.SetTextAsync(textDictation.Trim());
 // Prompt
 string prompt = string.Empty;
 if (keyPressed.Key == ConsoleKey.Spacebar)
@@ -51,7 +53,7 @@ DebugOutput(whisperInitialPromptFound, whisperPostProcessingCsvFound, textDictat
 
 static void DebugOutput(string whisperInitialPromptFound, string whisperPostProcessingCsvFound, string textDictation, string prompt, string initialTextDictation)
 {
-    Console.WriteLine($"\n\n--- Processing voice {whisperInitialPromptFound}{whisperPostProcessingCsvFound} ---");
+    Console.WriteLine($"\n\n\n\n--- DEBUG Processing voice {whisperInitialPromptFound}{whisperPostProcessingCsvFound} ---");
     Console.WriteLine("--- Initial Voice understanding: ---");
     Console.WriteLine(initialTextDictation);
     Console.WriteLine("--- Post CSV processing Voice understanding: ---");
