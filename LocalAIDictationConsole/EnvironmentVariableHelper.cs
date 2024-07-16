@@ -2,7 +2,7 @@
 
 internal static class EnvironmentVariableHelper
 {
-    public static string GetEnvironmentVariableFileContents(string environmentVariableName)
+    public static string GetEnvironmentVariableFileContents(string environmentVariableName, bool returnEmptyStringIfNotFound = false)
     {
         string? filePath = Environment.GetEnvironmentVariable(environmentVariableName);
         if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
@@ -11,7 +11,7 @@ internal static class EnvironmentVariableHelper
         }
         else
         {
-            return string.Empty;
+            return returnEmptyStringIfNotFound ? string.Empty : throw new ArgumentNullException(nameof(environmentVariableName));
         }
     }
 }

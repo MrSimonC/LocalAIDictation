@@ -17,9 +17,11 @@ The application uses the following **optional** environment variables:
 - `WHISPER_SERVER_IP`: The IP address of the Whisper server. Defaults to "localhost".
 - `WHISPER_AI_INITIAL_PROMPT_PATH`: Path to the file containing the initial prompt for the Whisper AI.
 - `WHISPER_AI_POST_PROCESSING_PATH`: Path to the file containing post-processing instructions for the Whisper AI.
-- `OLLAMA_BASE_CONTEXT_PATH`: Path to the file containing the base context for the Ollama API.
 - `OLLAMA_SERVER_IP`: The IP address of the Ollama server. Defaults to "localhost".
-- `OLLAMA_MODEL`: The model to use with the Ollama API. Defaults to "phi".
+- `OLLAMA_MODEL`: The model to use with the Ollama API. Defaults to "phi3".
+- `AI_PROMPT_DICTATION`: Path to the file containing the dictation prompt for the AI.
+- `AI_PROMPT_ACT_AS_ME`: Path to the file containing the "act as me" prompt for the AI.
+- `AI_BASE_CONTEXT`: Path to the file containing the base context for the AI.
 
 ## Getting Started
 
