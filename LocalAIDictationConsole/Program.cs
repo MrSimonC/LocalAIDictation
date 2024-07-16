@@ -19,7 +19,7 @@ string baseContext = EnvironmentVariableHelper.GetEnvironmentVariableFileContent
 // Voice
 var voiceToAi = new VoiceToAi(whisperServerIp, ollamaServerIp);
 ConversationContext? context = null;
-Console.WriteLine("--- Recording ---\nSpace:\tDictation (Post Processed)\nd:\tDictation only\na:\tAct as me");
+Console.WriteLine("--- Recording ---\nSpace:\tDictation (Post Processed)\nd:\tDictation only\na:\tAct as me\nc:\tAct as me (with Clipboard)");
 voiceToAi.VoiceInputRecordVoice();
 var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing ---");
@@ -37,6 +37,12 @@ else if (keyPressed.Key == ConsoleKey.D) // output dictation alone, then exit
 {
     await ClipboardService.SetTextAsync(textDictation.Trim());
     return;
+}
+else if (keyPressed.Key == ConsoleKey.C) // use the clipboard with context
+{
+    string clipboardText = await ClipboardService.GetTextAsync() ?? string.Empty;
+    string contextWithClipboard = baseContext + "\n\n" + clipboardText;
+    prompt = CreatePrompt(contextWithClipboard, promptActAsMe, textDictation);
 }
 else
 {
