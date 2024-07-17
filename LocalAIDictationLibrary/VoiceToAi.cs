@@ -61,7 +61,7 @@ namespace LocalAIDictationToLLM
         {
             string OllamaApiUrl = $"http://{OllamaServerIp}:11434";
             var uri = new Uri(OllamaApiUrl);
-            var ollama = new OllamaApiClient(uri)
+            var ollamaApiClient = new OllamaApiClient(uri)
             {
                 SelectedModel = model
             };
@@ -69,7 +69,7 @@ namespace LocalAIDictationToLLM
             // keep reusing the context to keep the chat topic going
             string streamedText = ""; // Variable to store the streamed text
 
-            context = await ollama.StreamCompletion(prompt, context, stream =>
+            context = await ollamaApiClient.StreamCompletion(prompt, context, stream =>
             {
                 Console.Write(stream.Response);
                 streamedText += stream.Response; // Append the streamed text to the variable
