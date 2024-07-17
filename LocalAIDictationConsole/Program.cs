@@ -18,7 +18,6 @@ string baseContext = EnvironmentVariableHelper.GetEnvironmentVariableFileContent
 
 // Voice
 var voiceToAi = new VoiceToAi(whisperServerIp, ollamaServerIp);
-ConversationContext? context = null;
 Console.WriteLine("--- Recording ---\nSpace:\tDictation (Post Processed)\nd:\tDictation only\na:\tAct as me\nc:\tAct as me (with Clipboard)");
 voiceToAi.VoiceInputRecordVoice();
 var keyPressed = Console.ReadKey(true);
@@ -50,6 +49,7 @@ else
     prompt = CreatePrompt(baseContext, promptActAsMe, textDictation);
 }
 // LLM Processing
+ConversationContext? context = null;
 (string streamedText, ConversationContext? _) = await voiceToAi.CallOllamaModelApi(ollamaModel, prompt, context);
 await ClipboardService.SetTextAsync(streamedText.Trim());
 

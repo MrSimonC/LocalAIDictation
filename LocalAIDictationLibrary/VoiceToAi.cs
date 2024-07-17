@@ -71,8 +71,8 @@ namespace LocalAIDictationToLLM
 
             context = await ollamaApiClient.StreamCompletion(prompt, context, stream =>
             {
-                Console.Write(stream.Response);
-                streamedText += stream.Response; // Append the streamed text to the variable
+                Console.Write(stream?.Response);
+                streamedText += stream?.Response; // Append the streamed text to the variable
             });
 
             return (streamedText, context); // Return the full streamed text and the context
