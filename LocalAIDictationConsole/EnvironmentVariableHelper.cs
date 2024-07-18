@@ -11,7 +11,7 @@ internal static class EnvironmentVariableHelper
         }
         else
         {
-            return returnEmptyStringIfNotFound ? string.Empty : throw new ArgumentNullException(nameof(environmentVariableName));
+            return returnEmptyStringIfNotFound ? string.Empty : throw new ArgumentNullException(environmentVariableName);
         }
     }
 }
