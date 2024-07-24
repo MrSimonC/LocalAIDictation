@@ -3,22 +3,28 @@ using LocalAIDictationToLLM;
 using OllamaSharp;
 using TextCopy;
 
+// Application-wide flag
+bool simpleDictationWithPostProcessingModeOnly = true;
+
 // Whisper
 string whisperServerIp = Environment.GetEnvironmentVariable("WHISPER_SERVER_IP") ?? "localhost";
 string whisperInitialPrompt = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("WHISPER_AI_INITIAL_PROMPT_PATH", true);
 string whisperPostProcessingCsv = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("WHISPER_AI_POST_PROCESSING_PATH", true);
 // Ollama
 string ollamaServerIp = Environment.GetEnvironmentVariable("OLLAMA_SERVER_IP") ?? "localhost";
-string ollamaModel = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "phi3";
-// Prompts
-string promptDictation = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_PROMPT_DICTATION");
-string promptActAsMe = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_PROMPT_ACT_AS_ME");
-// Context
-string baseContext = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_BASE_CONTEXT");
 
 // Voice
 var voiceToAi = new VoiceToAi(whisperServerIp, ollamaServerIp);
-Console.WriteLine("--- Recording ---\nSpace:\tDictation (Post Processed)\nd:\tDictation only\na:\tAct as me\nc:\tAct as me (with Clipboard)");
+
+if (simpleDictationWithPostProcessingModeOnly)
+{
+    Console.WriteLine("--- Recording ---");
+}
+else
+{
+    Console.WriteLine("--- Recording ---\nSpace:\tDictation (Post Processed)\nd:\tDictation only\na:\tAct as me\nc:\tAct as me (with Clipboard)");
+}
+
 voiceToAi.VoiceInputRecordVoice();
 var keyPressed = Console.ReadKey(true);
 Console.WriteLine("--- Processing ---");
@@ -28,6 +34,20 @@ string textDictation = PostProcessWhisperWithCSV(whisperPostProcessingCsv, initi
 string originalClipboardText = await ClipboardService.GetTextAsync() ?? string.Empty;
 // Always copy light-post-processed dictated text to clipboard
 await ClipboardService.SetTextAsync(textDictation.Trim());
+
+if (simpleDictationWithPostProcessingModeOnly)
+{
+    return;
+}
+
+// LLM Augmented Mode
+string ollamaModel = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "phi3";
+// Prompts
+string promptDictation = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_PROMPT_DICTATION");
+string promptActAsMe = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_PROMPT_ACT_AS_ME");
+// Context
+string baseContext = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_BASE_CONTEXT");
+
 // Prompt
 string prompt = string.Empty;
 if (keyPressed.Key == ConsoleKey.Spacebar)
