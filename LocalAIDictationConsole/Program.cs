@@ -1,4 +1,5 @@
 ﻿using AnythingLLMApi;
+using AnythingLLMApi.Models;
 using LocalAIDictationConsole;
 using LocalAIDictationToLLM;
 using TextCopy;
@@ -26,16 +27,23 @@ var anythingLlmApiKey = Environment.GetEnvironmentVariable("ANYTHING_LLM_API_KEY
 ArgumentNullException.ThrowIfNull(anythingLlmApiKey);
 var workspaceName = Environment.GetEnvironmentVariable("ANYTHING_LLM_DICTATION_WORKSPACE_NAME");
 ArgumentNullException.ThrowIfNull(workspaceName);
-var anythingLlmApiChat = new AnythingLlmApiChat( "http://localhost:3001/api/v1/", anythingLlmApiKey);
+var anythingLlmApiChat = new AnythingLlmApi("http://localhost:3001/api/", anythingLlmApiKey);
 await anythingLlmApiChat.AuthAsync();
 
 string InstructionPrompt = EnvironmentVariableHelper.GetEnvironmentVariableFileContents("AI_PROMPT_DICTATION");
 string promptWithDictation = string.Format(InstructionPrompt, textDictation);
 
-var workspaceSlug = await anythingLlmApiChat.GetWorkspaceSlugAsync(workspaceName);
+var workspaces = await anythingLlmApiChat.GetWorkspacesAsync();
+var workspaceSlug = workspaces?.Workspaces.First(x => x.Name == workspaceName).Slug ?? throw new ArgumentNullException($"{workspaceName} not found");
 string sessionId = Guid.NewGuid().ToString();
-string response = await anythingLlmApiChat.WorkspaceSendChatAsync(workspaceSlug, promptWithDictation, sessionId);
-await ClipboardService.SetTextAsync(response);
+var workspaceChatRequest = new WorkspaceChatRequest
+{
+    Message = promptWithDictation,
+    SessionId = sessionId
+};
+var response = await anythingLlmApiChat.ChatWithWorkspaceAsync(workspaceSlug, workspaceChatRequest);
+ArgumentNullException.ThrowIfNull(response);
+await ClipboardService.SetTextAsync(response.TextResponse);
 return;
 
 static string PostProcessWhisperWithCSV(string whisperPostProcessingCsv, string textDictation)
