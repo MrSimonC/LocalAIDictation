@@ -1,5 +1,4 @@
 ﻿using NAudio.Wave;
-using OllamaSharp;
 using System.Net.Http.Headers;
 
 namespace LocalAIDictationToLLM;
