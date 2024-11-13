@@ -21,6 +21,7 @@ string initialTextDictation = await voiceToAi.VoiceProcessRecordingToTextAsync(w
 string textDictation = PostProcessWhisperWithCSV(whisperPostProcessingCsv, initialTextDictation);
 textDictation = textDictation.Trim();
 await ClipboardService.SetTextAsync(textDictation);
+Console.WriteLine("--- Raw transcription copied to clipboard ---");
 
 // Augment with AI
 var anythingLlmApiKey = Environment.GetEnvironmentVariable("ANYTHING_LLM_API_KEY");
